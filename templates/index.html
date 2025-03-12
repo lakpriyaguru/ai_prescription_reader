@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prescription Identifier</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --primary-hover-color: #0056b3;
+            --background-color: #f4f6f9;
+            --text-color: #343a40;
+            --secondary-text-color: #6c757d;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            background-color: var(--background-color);
+            font-family: 'Nunito', sans-serif;
+            margin: 0;
+            padding: 0;
+            color: var(--text-color);
+        }
+
+        .container {
+            max-width: 1200px;
+            /* Increased width to accommodate side-by-side layout */
+            margin: 50px auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            border: 1px solid #dee2e6;
+        }
+
+        h1 {
+            font-size: 30px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .instructions {
+            font-size: 20px;
+            color: var(--secondary-text-color);
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            font-weight: bold;
+            color: var(--text-color);
+        }
+
+        .form-control {
+            margin-bottom: 15px;
+            border-radius: var(--border-radius);
+            padding: 10px;
+            border: 1px solid #dee2e6;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            border: none;
+            border-radius: var(--border-radius);
+            padding: 10px 20px;
+            font-size: 20px;
+            width: 100%;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover-color);
+        }
+
+        .result {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .execution-time {
+            font-size: 16px;
+            color: #28a745;
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 16px;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            text-align: center;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        /* Loading Spinner Styles */
+        .loading-spinner {
+            display: none;
+            /* Hidden by default */
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: var(--primary-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Side-by-side layout for image and table */
+        .result-container {
+            display: flex;
+            gap: 20px;
+            /* Space between image and table */
+            align-items: flex-start;
+            /* Align items to the top */
+        }
+
+        .uploaded-image {
+            flex: 1;
+            /* Take up 50% of the space */
+            max-width: 50%;
+            /* Limit image width */
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+
+        .table-container {
+            flex: 1;
+            /* Take up 50% of the space */
+            overflow-x: auto;
+            /* Add horizontal scroll for small screens */
+        }
+
+        footer {
+            margin-top: 20px;
+            font-size: 14px;
+            color: var(--secondary-text-color);
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>Prescription Identifier</h1>
+            <p class="instructions">Upload an image of your prescription. The system will detect the medicines that
+                prescribed.</p>
+        </header>
+
+        <main>
+            <form id="uploadForm" action="/" method="post" enctype="multipart/form-data">
+                <label for="imagefile" class="form-label">Upload your Prescription:</label>
+                <input class="form-control" id="imagefile" type="file" name="imagefile" accept="image/*" required
+                    aria-label="Upload prescription image">
+                <button class="btn btn-primary mt-3" type="submit">Submit</button>
+            </form>
+
+            <!-- Loading Spinner -->
+            <div class="loading-spinner" id="loadingSpinner">
+                <div class="spinner"></div>
+                <p>Processing your Prescription...</p>
+            </div>
+
+            <!-- Display detected text or error messages -->
+            {% if prediction_status %}
+            <div class="result">
+                <h3>Detected Medicines</h3>
+                <div class="result-container">
+                    <!-- Display uploaded image -->
+                    <img src="{{ uploaded_image_url }}" alt="Uploaded Prescription" class="uploaded-image">
+
+                    <!-- Display table -->
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Dosage</th>
+                                    <th>Frequency</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in detected_text %}
+                                <tr>
+                                    <td>{{ item.name }}</td>
+                                    <td>{{ item.dosage }}</td>
+                                    <td>{{ item.frequency }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <p></p>
+                <p class="execution-time">Execution Time: {{ execution_time }} seconds</p>
+            </div>
+            {% elif error_message %}
+            <div class="error-message">
+                <p>{{ error_message }}</p>
+            </div>
+            {% endif %}
+        </main>
+
+        <footer>
+            &copy; 2025 Prescription Identifier.
+        </footer>
+    </div>
+
+    <script>
+        // Show loading spinner when the form is submitted
+        document.getElementById('uploadForm').addEventListener('submit', function () {
+            document.getElementById('loadingSpinner').style.display = 'block';
+        });
+    </script>
+</body>
+
+</html>
