@@ -1,8 +1,0 @@
-Python 3.12.6
-python -m venv .myenv
-.myenv/Scripts/activate
-pip install -r requirements.txt
-python app.py
-
-.myenv/Scripts/activate
-python app.py
