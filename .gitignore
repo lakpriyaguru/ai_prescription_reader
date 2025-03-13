@@ -3,5 +3,3 @@ uploads/*
 craft_output/*
 *__pycache__/
 models/*
-note.txt
-sample_images/
